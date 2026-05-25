@@ -138,6 +138,20 @@ ffmpeg -y -loglevel error \
       fade=t=in:st=0:d=${FADE},fade=t=out:st=$(awk -v d=$INFO_DUR -v f=$FADE 'BEGIN{print d-f}'):d=${FADE}
   " \
   -t ${INFO_DUR} -c:v libx264 -pix_fmt yuv420p -r ${FPS} "$INFO_OUT"
+i=$((i+1))
+
+# === QR final card ===
+QR_DUR=5.0
+QR_IMG="西梅田QR文字入り.jpg"
+QR_OUT=$(printf "video_work/clips/clip_%02d.mp4" $i)
+echo "=== Building $QR_OUT (QR card) ==="
+ffmpeg -y -loglevel error \
+  -loop 1 -t ${QR_DUR} -r ${FPS} -i "$QR_IMG" \
+  -filter_complex "
+    [0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},format=yuv420p,
+      fade=t=in:st=0:d=${FADE},fade=t=out:st=$(awk -v d=$QR_DUR -v f=$FADE 'BEGIN{print d-f}'):d=${FADE}
+  " \
+  -t ${QR_DUR} -r ${FPS} -c:v libx264 -pix_fmt yuv420p "$QR_OUT"
 
 # concat
 LIST=video_work/concat.txt
